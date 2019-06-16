@@ -9,7 +9,9 @@ Install:
 Run: 
 
 'python3 lstm_with_sequence.py' to run our final model
+
 'python3 baseline.py' to run the baseline classifier
+
 'python3 perceptron.py' to run the perceptron model
 
 don't run any other .py file.
