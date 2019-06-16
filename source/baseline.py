@@ -1,10 +1,11 @@
 import sys
 import re 
-from util import get_list_from_textfile, eval_accuracy
+from util import get_list_from_textfile, eval_accuracy,valuation
+from sklearn.metrics import accuracy_score,precision_score,balanced_accuracy_score
 
-input_path = "../data/audio_all.txt"
-output_path = "../data/baseline.txt"
-true_path = "../data/preprocessed_all.txt"
+input_path = "./data/audio_all-temp.txt"
+output_path = "./data/baseline.txt"
+true_path = "./data/preprocessed_all.txt"
 
 def baseline(input_path, output_path):
         f = open(input_path, "r", encoding="utf8")
@@ -36,4 +37,4 @@ def baseline(input_path, output_path):
 
 
 baseline(input_path,output_path)
-eval_accuracy(output_path,true_path)
+valuation(output_path,true_path)

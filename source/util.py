@@ -6,6 +6,7 @@
 
 
 import numpy as np
+from sklearn.metrics import accuracy_score,precision_score,balanced_accuracy_score
 import torch
 
 def prepare_sequence(data,seq_len):
@@ -36,7 +37,7 @@ def generate_dataset(datapath):
                         dataset.append((raw_data[i],1))
                 else:
                         dataset.append((raw_data[i], 0))
-        #np.random.shuffle(dataset)     commentato per fare sequenze di parola da inserire nell'LSTM
+        np.random.shuffle(dataset)     #commentato per fare sequenze di parola da inserire nell'LSTM
         return dataset
 
 def split_dataset(dataset, train_dim=0.8, val_dim=0.1, test_dim=0.1):
@@ -96,6 +97,7 @@ def eval_accuracy(prediction_path, true_path):
     n_correct_brk = 0
     n_errors = 0
     j = 0
+    fn = tn = 0
 
     for i in range(0, len(true)-1):
             if(true[i] == '<BRK>'):
@@ -103,11 +105,13 @@ def eval_accuracy(prediction_path, true_path):
                     if(pred[j] == '<BRK>'):
                             n_correct_brk +=1
                             j += 1
+                    #else: fn = fn +1
             else:
                     if(pred[j] == '<BRK>'):
                             n_errors += 1
                             i -= 1
                             j += 1
+                    #elif(pred[j] != '<BRK>'): tn = tn +1
                     if (pred[j] != true[i] and pred[j] != true[i+1]):
                         #   --- DEBUG ---
                             print("### Lists Unaligned! Words: ({} , {}) at index j={} , i={} ###".format(pred[j],true[i],j,i)) 
@@ -118,4 +122,59 @@ def eval_accuracy(prediction_path, true_path):
     print("Number of breaks in True:                {}".format(n_brk_true))
     print("Number of correctly predicted breaks:    {} out of {}".format(n_correct_brk,n_brk_true))
     print("Number of mistakenly predicted breaks:   {}".format(n_errors))
-    print("Model accuracy score:                    {}".format(n_correct_brk/(n_brk_true + n_errors)))
+    print("Model precision score:                    {}".format(n_correct_brk/(n_brk_true + n_errors)))
+   # print("Model accuracy score:                    {}".format( (n_correct_brk + tn)/(n_correct_brk + tn + fn + n_errors) ))
+
+def eval_accuracy_2(pred, true):
+
+    n_brk_true = 0
+    n_correct_brk = 0
+    n_errors = 0
+
+
+    for i in range(0, len(true)-1):
+            if(true[i] == 1):
+                    n_brk_true += 1
+                    if(pred[i] == 1):
+                            n_correct_brk +=1
+            else:
+                    if(pred[i] == 1):
+                            n_errors += 1
+
+    '''
+    print("Number of breaks in True:                {}".format(n_brk_true))
+    print("Number of correctly predicted breaks:    {} out of {}".format(n_correct_brk,n_brk_true))
+    print("Number of mistakenly predicted breaks:   {}".format(n_errors))
+    print("Model precision score:                    {}".format(n_correct_brk/(n_brk_true + n_errors)))
+
+   # print("Model accuracy score:                    {}".format( (n_correct_brk + tn)/(n_correct_brk + tn + fn + n_errors) ))'''
+    return n_correct_brk/(n_brk_true + n_errors)
+def valuation(prediction_path, true_path):
+        pred = get_list_from_textfile(prediction_path)
+        true = get_list_from_textfile(true_path)
+
+        list_pred = []
+        i = 0
+        while i < len(pred)-1:
+                if(pred[i] != "<BRK>"):
+                        if(pred[i+1] == "<BRK>"):
+                                i = i + 1
+                                list_pred.append(1)
+                        else: 
+                                list_pred.append(0) 
+                i = i + 1
+        list_pred.append(0)
+
+        list_true = []
+        j = 0
+        while j < len(true)-1:
+                if(true[j] != "<BRK>"):
+                        if(true[j+1] == "<BRK>"):
+                                j = j +1
+                                list_true.append(1)
+                        else: 
+                                list_true.append(0) 
+                j = j + 1
+        list_true.append(0)
+
+        print(balanced_accuracy_score(list_true,list_pred))
